@@ -1,6 +1,6 @@
 module.exports = async (req, res) => {
   const playerId = req.query.player || 'unknown';
-
+  
   const html = `
 <!DOCTYPE html>
 <html dir="rtl">
@@ -18,17 +18,41 @@ module.exports = async (req, res) => {
       padding: 20px;
     }
     .container { max-width: 400px; margin: 0 auto; }
-    .header { text-align: center; padding: 30px 0; }
-    .header h1 { font-size: 28px; color: #ffd700; margin-bottom: 10px; }
-    .header p { color: #aaa; }
+    
+    /* ✅ الصورة من هنا */
+    .logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+    /* لو عندك صورة حقيقية، استبدل اللي فوق بـ:
+    .logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      background: url('رابط-الصورة') center/contain no-repeat;
+      border-radius: 20px;
+    }
+    */
+    
+    .header { text-align: center; padding: 20px 0; }
+    .header h1 { font-size: 24px; color: #ffd700; margin-bottom: 10px; }
+    .header p { color: #aaa; font-size: 14px; }
     
     .packages { margin: 20px 0; }
     .package { 
       background: rgba(255,255,255,0.1); 
       border: 2px solid transparent;
       border-radius: 15px; 
-      padding: 20px; 
-      margin: 15px 0;
+      padding: 15px; 
+      margin: 10px 0;
       cursor: pointer;
       transition: all 0.3s;
     }
@@ -37,12 +61,12 @@ module.exports = async (req, res) => {
       background: rgba(255,215,0,0.1);
     }
     .package .coins { 
-      font-size: 24px; 
+      font-size: 22px; 
       font-weight: bold; 
       color: #ffd700;
     }
     .package .price { 
-      font-size: 18px; 
+      font-size: 16px; 
       color: #4CAF50;
       margin-top: 5px;
     }
@@ -56,17 +80,18 @@ module.exports = async (req, res) => {
     .method { 
       background: rgba(255,255,255,0.05);
       border-radius: 10px;
-      padding: 15px;
-      margin: 10px 0;
+      padding: 12px;
+      margin: 8px 0;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
+      font-size: 14px;
     }
     .method:hover { background: rgba(255,255,255,0.1); }
-    .method-icon { font-size: 24px; }
+    .method-icon { font-size: 20px; }
     
-    .instapay-info {
+    .payment-info {
       background: #4CAF50;
       color: white;
       padding: 20px;
@@ -75,28 +100,34 @@ module.exports = async (req, res) => {
       text-align: center;
       display: none;
     }
-    .instapay-info.show { display: block; }
-    .instapay-id {
-      font-size: 20px;
+    .payment-info.show { display: block; }
+    .payment-id {
+      font-size: 18px;
       font-weight: bold;
       background: rgba(0,0,0,0.2);
       padding: 10px;
       border-radius: 5px;
       margin: 10px 0;
       user-select: all;
+      direction: ltr;
+    }
+    .instructions {
+      font-size: 13px;
+      margin-top: 15px;
+      line-height: 1.6;
     }
     
     .confirm-btn {
       background: #ffd700;
       color: #1a1a2e;
       border: none;
-      padding: 15px 30px;
-      font-size: 18px;
+      padding: 15px;
+      font-size: 16px;
       font-weight: bold;
       border-radius: 10px;
       cursor: pointer;
       width: 100%;
-      margin-top: 20px;
+      margin-top: 15px;
       display: none;
     }
     .confirm-btn.show { display: block; }
@@ -110,6 +141,7 @@ module.exports = async (req, res) => {
       display: none;
     }
     .success-message.show { display: block; }
+    .success-message h2 { margin-bottom: 10px; }
     
     .loading {
       text-align: center;
@@ -121,8 +153,11 @@ module.exports = async (req, res) => {
 </head>
 <body>
   <div class="container">
+    <!-- ✅ الصورة -->
+    <div class="logo">🎮</div>
+    
     <div class="header">
-      <h1>🎮 كشري سيميوليتور</h1>
+      <h1>كشري سيميوليتور</h1>
       <p>اختر الباقة اللي تناسبك</p>
     </div>
     
@@ -149,7 +184,7 @@ module.exports = async (req, res) => {
     </div>
     
     <div class="payment-methods" id="paymentMethods">
-      <h3 style="margin-bottom: 15px;">اختر طريقة الدفع:</h3>
+      <h3 style="margin-bottom: 15px; font-size: 16px;">اختر طريقة الدفع:</h3>
       
       <div class="method" onclick="selectMethod('vodafone')">
         <span class="method-icon">📱</span>
@@ -168,19 +203,19 @@ module.exports = async (req, res) => {
       
       <div class="method" onclick="selectMethod('card')">
         <span class="method-icon">💳</span>
-        <span>بطاقة بنكية (فوري)</span>
+        <span>بطاقة بنكية</span>
       </div>
     </div>
     
-    <div class="instapay-info" id="instapayInfo">
+    <div class="payment-info" id="paymentInfo">
       <p>✅ تم اختيار: <span id="selectedAmount">---</span> عملة</p>
       <p>المبلغ: <span id="selectedPrice">---</span> جنيه</p>
       <hr style="margin: 15px 0; opacity: 0.3;">
       <p>احول المبلغ على:</p>
-      <div class="instapay-id">bankmisr.youssef@instapay</div>
-      <p style="font-size: 14px; margin-top: 10px;">
-        📋 انسخ الرقم وافتح تطبيق البنك
-      </p>
+      <div class="payment-id" id="paymentId">bankmisr.youssef@instapay</div>
+      <div class="instructions" id="instructions">
+        📱 افتح تطبيق البنك وارسل المبلغ للرقم/الحساب اللي فوق
+      </div>
     </div>
     
     <div class="loading" id="loading">
@@ -190,7 +225,7 @@ module.exports = async (req, res) => {
     <div class="success-message" id="successMessage">
       <h2>✅ تم استلام طلبك!</h2>
       <p>سيتم إضافة العملات لحسابك خلال دقائق</p>
-      <p style="margin-top: 15px; font-size: 14px;">
+      <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
         اغلق الصفحة وافتح اللعبة مرة أخرى
       </p>
     </div>
@@ -206,6 +241,25 @@ module.exports = async (req, res) => {
     let selectedPrice = 0;
     let selectedMethod = '';
     
+    const methodInfo = {
+      vodafone: {
+        id: '0102-XXX-XXXX (فودافون كاش)',
+        instructions: '📱 افتح تطبيق My Vodafone وارسل المبلغ للرقم اللي فوق'
+      },
+      instapay: {
+        id: 'bankmisr.youssef@instapay',
+        instructions: '🏦 افتح تطبيق InstaPay وارسل المبلغ للحساب اللي فوق'
+      },
+      telda: {
+        id: '0102-XXX-XXXX (تيلدا)',
+        instructions: '📱 افتح تطبيق Telda وارسل المبلغ للرقم اللي فوق'
+      },
+      card: {
+        id: 'bankmisr.youssef@instapay (فوري)',
+        instructions: '💳 ادفع من أي فرع فوري أو اونلاين على الحساب اللي فوق'
+      }
+    };
+    
     function selectPackage(coins, price, element) {
       selectedCoins = coins;
       selectedPrice = price;
@@ -214,21 +268,21 @@ module.exports = async (req, res) => {
       element.classList.add('selected');
       
       document.getElementById('paymentMethods').classList.add('show');
-      document.getElementById('instapayInfo').classList.remove('show');
+      document.getElementById('paymentInfo').classList.remove('show');
       document.getElementById('confirmBtn').classList.remove('show');
     }
     
     function selectMethod(method) {
       selectedMethod = method;
+      const info = methodInfo[method];
       
       document.getElementById('selectedAmount').textContent = selectedCoins;
       document.getElementById('selectedPrice').textContent = selectedPrice;
-      document.getElementById('instapayInfo').classList.add('show');
-      document.getElementById('confirmBtn').classList.add('show');
+      document.getElementById('paymentId').textContent = info.id;
+      document.getElementById('instructions').textContent = info.instructions;
       
-      if (method === 'instapay') {
-        window.location.href = 'https://ipn.instapay.dev/e/bankmisr.youssef@instapay?amount=' + selectedPrice;
-      }
+      document.getElementById('paymentInfo').classList.add('show');
+      document.getElementById('confirmBtn').classList.add('show');
     }
     
     async function confirmPayment() {
@@ -252,9 +306,11 @@ module.exports = async (req, res) => {
         if (data.success) {
           document.getElementById('loading').classList.remove('show');
           document.getElementById('successMessage').classList.add('show');
+        } else {
+          throw new Error(data.error);
         }
       } catch (error) {
-        alert('حدث خطأ، حاول مرة أخرى');
+        alert('حدث خطأ: ' + error.message);
         document.getElementById('loading').classList.remove('show');
         document.getElementById('confirmBtn').classList.add('show');
       }
@@ -263,7 +319,7 @@ module.exports = async (req, res) => {
 </body>
 </html>
   `;
-
+  
   res.setHeader('Content-Type', 'text/html');
   res.send(html);
 };
